@@ -64,7 +64,8 @@ def test_build_alert_fields():
     assert alert.pipeline_name == "my_pipe"
     assert alert.metric == "error_rate"
     assert alert.value == pytest.approx(0.08)
-    assert alert.threshold == pytestn    assert alert.level == AlertLevel.WARNING
+    assert alert.threshold == pytest.approx(0.05)
+    assert alert.level == AlertLevel.WARNING
 
 
 def test_unknown_channel_logs_warning(caplog):
