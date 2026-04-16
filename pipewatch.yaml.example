@@ -1,0 +1,33 @@
+# pipewatch configuration example
+# Copy to pipewatch.yaml and customize.
+
+log_level: INFO          # DEBUG | INFO | WARNING | ERROR
+state_file: .pipewatch_state.json  # path to persist failure state
+
+pipelines:
+
+  # Example: nightly ETL job
+  etl_nightly:
+    threshold_failures: 3       # alert after this many failures
+    window_seconds: 3600        # within this rolling time window
+    alert_channels:
+      - slack
+      - email
+    tags:
+      team: data-engineering
+      env: production
+
+  # Example: ML feature pipeline with tighter tolerance
+  ml_feature_pipeline:
+    threshold_failures: 1
+    window_seconds: 600
+    alert_channels:
+      - pagerduty
+    tags:
+      team: ml-platform
+      critical: "true"
+
+  # Minimal pipeline — uses all defaults
+  simple_sync:
+    threshold_failures: 5
+    window_seconds: 300
