@@ -1,1 +1,1 @@
-"""Pipewatch CLI command modules."""
+"""Pipewatch sub-commands package."""
