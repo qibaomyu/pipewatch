@@ -73,3 +73,12 @@ def test_dry_run_passes_flag_to_dispatcher(config_path):
         MockRunner.return_value.run.return_value = _make_result(healthy=True)
         run_cli(["-c", str(config_path), "--dry-run"])
         MockDispatcher.assert_called_once_with(dry_run=True)
+
+
+def test_verbose_flag_parsed(config_path):
+    """Ensure --verbose is forwarded through argument parsing."""
+    with patch("pipewatch.cli.PipelineRunner") as MockRunner:
+        MockRunner.return_value.run.return_value = _make_result(healthy=True)
+        parser = build_parser()
+        args = parser.parse_args(["-c", str(config_path), "--verbose"])
+        assert args.verbose is True
