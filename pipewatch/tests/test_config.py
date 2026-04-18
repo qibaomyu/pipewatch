@@ -73,3 +73,13 @@ def test_env_var_config_path(config_file):
     with patch.dict(os.environ, {"PIPEWATCH_CONFIG": config_file}):
         config = load_config()
     assert "etl_daily" in config.pipelines
+
+
+def test_malformed_yaml_returns_defaults(tmp_path):
+    """A config file with invalid YAML should fall back to default AppConfig."""
+    bad_cfg = tmp_path / "bad.yaml"
+    bad_cfg.write_text("pipelines: [this: is: not: valid\n  yaml: -")
+    config = load_config(str(bad_cfg))
+    assert isinstance(config, AppConfig)
+    assert config.pipelines == {}
+    assert config.log_level == "INFO"
