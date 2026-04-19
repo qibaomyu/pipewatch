@@ -1,1 +1,1 @@
-# commands package
+"""pipewatch commands package."""
