@@ -43,3 +43,9 @@ def test_spike_subcommand_flags(_parser):
     args = _parser.parse_args(["spike", "--json", "--exit-code"])
     assert args.json is True
     assert args.exit_code is True
+
+
+def test_spike_subcommand_custom_history_file(_parser):
+    """Ensure --history-file overrides the default path."""
+    args = _parser.parse_args(["spike", "--history-file", "/tmp/custom_history.json"])
+    assert args.history_file == "/tmp/custom_history.json"
