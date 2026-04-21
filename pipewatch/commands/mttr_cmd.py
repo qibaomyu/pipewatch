@@ -9,7 +9,13 @@ from pipewatch.history import RunHistory, HistoryEntry
 
 
 def _pipeline_mttr(entries: list[HistoryEntry]) -> Optional[float]:
-    """Return mean recovery time in seconds, or None if no recoveries found."""
+    """Return mean recovery time in seconds, or None if no recoveries found.
+
+    A recovery is defined as a transition from an unhealthy entry to a healthy
+    entry. The recovery time is the elapsed seconds between those two entries.
+    Only consecutive (prev, current) pairs are considered; gaps in the timeline
+    are not interpolated.
+    """
     recovery_times: list[float] = []
     prev: Optional[HistoryEntry] = None
 
@@ -25,6 +31,7 @@ def _pipeline_mttr(entries: list[HistoryEntry]) -> Optional[float]:
 
 
 def _format_text(results: dict[str, Optional[float]]) -> str:
+    """Format MTTR results as a human-readable string."""
     lines = []
     for pipeline, mttr in results.items():
         if mttr is None:
@@ -35,6 +42,14 @@ def _format_text(results: dict[str, Optional[float]]) -> str:
 
 
 def run_mttr_cmd(args) -> int:
+    """Entry point for the 'mttr' subcommand.
+
+    Loads run history, computes mean time to recovery for each pipeline
+    (or a single pipeline when --pipeline is specified), then prints the
+    results either as plain text or JSON.
+
+    Returns 0 on success, 1 when the requested pipeline has no history.
+    """
     history = RunHistory(args.history_file)
     all_entries = history.all()
 
@@ -42,6 +57,12 @@ def run_mttr_cmd(args) -> int:
         [args.pipeline] if getattr(args, "pipeline", None)
         else sorted({e.pipeline for e in all_entries})
     )
+
+    if getattr(args, "pipeline", None) and args.pipeline not in {
+        e.pipeline for e in all_entries
+    }:
+        print(f"Error: pipeline '{args.pipeline}' not found in history.")
+        return 1
 
     results: dict[str, Optional[float]] = {}
     for name in pipelines:
@@ -62,6 +83,7 @@ def run_mttr_cmd(args) -> int:
 
 
 def register_mttr_subcommand(subparsers) -> None:
+    """Register the 'mttr' subcommand with the given argparse subparsers."""
     p = subparsers.add_parser("mttr", help="Show mean time to recovery per pipeline")
     p.add_argument("--pipeline", default=None, help="Filter to a single pipeline")
     p.add_argument("--json", action="store_true", help="Output as JSON")
