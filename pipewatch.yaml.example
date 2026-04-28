@@ -4,6 +4,14 @@
 log_level: INFO          # DEBUG | INFO | WARNING | ERROR
 state_file: .pipewatch_state.json  # path to persist failure state
 
+# Global defaults applied to any pipeline that omits the field.
+# Per-pipeline values always take precedence.
+defaults:
+  threshold_failures: 3
+  window_seconds: 1800
+  alert_channels:
+    - email
+
 pipelines:
 
   # Example: nightly ETL job
@@ -27,7 +35,7 @@ pipelines:
       team: ml-platform
       critical: "true"
 
-  # Minimal pipeline — uses all defaults
+  # Minimal pipeline — omitted fields are filled from the defaults block above
   simple_sync:
     threshold_failures: 5
     window_seconds: 300
