@@ -1,0 +1,1 @@
+from pipewatch.commands.throughput_cap_cmd import register_throughput_cap_subcommand
