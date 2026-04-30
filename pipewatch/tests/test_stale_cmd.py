@@ -13,11 +13,13 @@ from pipewatch.history import HistoryEntry
 
 
 def _entry(pipeline: str, minutes_ago: float) -> HistoryEntry:
+    """Create a HistoryEntry with a timestamp relative to now."""
     ts = datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)
     return HistoryEntry(pipeline=pipeline, timestamp=ts, healthy=True, error_rate=0.0, latency=1.0, alerts=[])
 
 
 def _args(**kwargs):
+    """Build a Namespace with default stale_cmd arguments, overridden by kwargs."""
     defaults = {
         "pipeline": None,
         "threshold": 60,
@@ -30,6 +32,7 @@ def _args(**kwargs):
 
 
 def _patch(entries_by_pipeline: dict):
+    """Patch RunHistory so it returns the given entries keyed by pipeline name."""
     mock_history = MagicMock()
     mock_history.pipelines.return_value = list(entries_by_pipeline.keys())
     mock_history.get.side_effect = lambda p: entries_by_pipeline.get(p, [])
@@ -55,6 +58,14 @@ def test_pipeline_stale_recent():
 def test_pipeline_stale_old():
     mock_history = MagicMock()
     mock_history.get.return_value = [_entry("pipe_a", 120)]
+    result = _pipeline_stale(mock_history, "pipe_a", 60)
+    assert result["stale"] is True
+
+
+def test_pipeline_stale_exactly_at_threshold():
+    """A pipeline last seen exactly at the threshold boundary should be considered stale."""
+    mock_history = MagicMock()
+    mock_history.get.return_value = [_entry("pipe_a", 60)]
     result = _pipeline_stale(mock_history, "pipe_a", 60)
     assert result["stale"] is True
 
